@@ -116,7 +116,8 @@ function mount(root: HTMLElement, data: MapFile): void {
   let selected: Drawable | null = null;
   let hovered: Drawable | null = null;
   let query = "";
-  const view = fitView(data.width, data.height, window.innerWidth, window.innerHeight, mapInset(window.innerWidth));
+  const view = fitView(data.width, data.height, window.innerWidth, window.innerHeight, { top: 88, right: 16, bottom: 72, left: 16 });
+  let framedByUser = false;
   let dragging = false;
   let moved = false;
   let lastX = 0;
@@ -144,6 +145,8 @@ function mount(root: HTMLElement, data: MapFile): void {
       canvas.width = Math.round(rect.width * dpr);
       canvas.height = Math.round(rect.height * dpr);
     }
+    if (!framedByUser) Object.assign(view, countryView());
+    stage.style.setProperty("--dock-h", `${stage.querySelector("#dock")?.getBoundingClientRect().height ?? 0}px`);
     sharp = null;
     paintSharp();
   };
@@ -152,7 +155,7 @@ function mount(root: HTMLElement, data: MapFile): void {
     const rect = stage.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     base.width = base.width;
-    const countryScale = fitView(data.width, data.height, rect.width, rect.height, mapInset(rect.width)).scale;
+    const countryScale = fitView(data.width, data.height, rect.width, rect.height, mapInset(stage)).scale;
     paint(baseCtx, drawables, statePaths, byUf, currentMode(), rect.width, rect.height, dpr, view, countryScale);
     if (cache.width !== base.width || cache.height !== base.height) {
       cache.width = base.width;
@@ -210,6 +213,7 @@ function mount(root: HTMLElement, data: MapFile): void {
   const pick = (item: Drawable | null, focus: boolean): void => {
     selected = item;
     if (item && focus) {
+      framedByUser = true;
       focusOn(item.box, stage, view);
       requestFast();
       settleSharp();
@@ -233,7 +237,10 @@ function mount(root: HTMLElement, data: MapFile): void {
     if (dragging) {
       const dx = event.clientX - lastX;
       const dy = event.clientY - lastY;
-      if (Math.hypot(dx, dy) > 3) moved = true;
+      if (Math.hypot(dx, dy) > 3) {
+        moved = true;
+        framedByUser = true;
+      }
       view.panX += dx;
       view.panY += dy;
       lastX = event.clientX;
@@ -272,15 +279,18 @@ function mount(root: HTMLElement, data: MapFile): void {
     if (item) pick(item, true);
   });
   const countryView = (): { scale: number; panX: number; panY: number } =>
-    fitView(data.width, data.height, stage.clientWidth, stage.clientHeight, mapInset(stage.clientWidth));
+    fitView(data.width, data.height, stage.clientWidth, stage.clientHeight, mapInset(stage));
   const applyZoom = (factor: number, cursorX: number, cursorY: number): void => {
     const fitted = countryView();
     const next = zoomAt(view.scale, view.panX, view.panY, cursorX, cursorY, factor, {
       min: fitted.scale,
       max: Math.min(8, fitted.scale * 80),
     });
-    if (next.scale <= fitted.scale * 1.02) Object.assign(view, fitted);
-    else Object.assign(view, next);
+    framedByUser = true;
+    if (next.scale <= fitted.scale * 1.02) {
+      framedByUser = false;
+      Object.assign(view, fitted);
+    } else Object.assign(view, next);
     requestFast();
     settleSharp();
   };
@@ -310,6 +320,7 @@ function mount(root: HTMLElement, data: MapFile): void {
       return;
     }
     if (action === "reset") {
+      framedByUser = false;
       Object.assign(view, countryView());
       requestFast();
       settleSharp();
@@ -359,8 +370,8 @@ function mount(root: HTMLElement, data: MapFile): void {
     }
   });
   new ResizeObserver(resize).observe(stage);
-  resize();
   renderPanels();
+  resize();
 }
 
 function paint(
@@ -399,9 +410,16 @@ function paint(
   drawStateLabels(ctx, byUf, dpr, view);
 }
 
-function mapInset(width: number): { top: number; right: number; bottom: number; left: number } {
-  if (width < 860) return { top: 88, right: 12, bottom: 250, left: 12 };
-  return { top: 78, right: 28, bottom: 58, left: 28 };
+function mapInset(stage: HTMLElement): { top: number; right: number; bottom: number; left: number } {
+  const width = stage.clientWidth;
+  const topbar = stage.querySelector(".topbar");
+  const dock = stage.querySelector("#dock");
+  const top = Math.ceil((topbar?.getBoundingClientRect().height ?? 56) + 20);
+  if (width < 900) {
+    const bottom = Math.ceil((dock?.getBoundingClientRect().height ?? 240) + 12);
+    return { top, right: 10, bottom, left: 10 };
+  }
+  return { top: 78, right: 28, bottom: 64, left: 28 };
 }
 
 function drawStateLabels(
@@ -579,6 +597,7 @@ function shell(): string {
         </form>
         <p class="status" id="status"></p>
       </header>
+      <div class="dock" id="dock">
       <section class="panel left" id="left-card">
         <div class="map-controls">
           <div class="segment" role="group" aria-label="Como ver o voto">
@@ -596,12 +615,13 @@ function shell(): string {
         <div id="left-panel"></div>
       </section>
       <aside class="panel right" id="right-panel"></aside>
+      <div class="legend" id="legend"></div>
+      </div>
       <div class="zoom">
         <button type="button" data-action="zoom" data-factor="in" aria-label="Aproximar">+</button>
         <button type="button" data-action="zoom" data-factor="out" aria-label="Afastar">−</button>
         <button type="button" data-action="reset" aria-label="Ver o Brasil">⌂</button>
       </div>
-      <div class="legend" id="legend"></div>
       <div class="tooltip" id="tooltip" hidden></div>
     </main>`;
 }
@@ -735,8 +755,11 @@ function moveTooltip(x: number, y: number, item: Drawable | null): void {
   }
   tooltip.hidden = false;
   tooltip.innerHTML = `<b>${escapeHtml(item.mun.nome)}</b>${item.mun.uf} · ${leaderLabel(item.leader)} ${formatNumber(Math.max(item.mun.fp, item.mun.lp), 1)}%`;
-  tooltip.style.left = `${x + 14}px`;
-  tooltip.style.top = `${y + 14}px`;
+  const pad = 8;
+  const width = tooltip.offsetWidth;
+  const height = tooltip.offsetHeight;
+  tooltip.style.left = `${Math.max(pad, Math.min(x + 14, window.innerWidth - width - pad))}px`;
+  tooltip.style.top = `${Math.max(pad, Math.min(y + 14, window.innerHeight - height - pad))}px`;
 }
 
 function toWorld(x: number, y: number, view: { scale: number; panX: number; panY: number }): { x: number; y: number } {
