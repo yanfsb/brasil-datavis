@@ -1,0 +1,16 @@
+{
+  "name": "chao-e-urna",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "node --experimental-strip-types --test src/stats.test.ts src/mapdraw.test.ts",
+    "snapshot": "python3 scripts/build_snapshot.py",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vite": "^6.3.5"
+  }
+}
