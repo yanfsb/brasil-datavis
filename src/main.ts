@@ -8,6 +8,7 @@ import {
   indicatorColor,
   intersectsView,
   leaderOf,
+  overscanView,
   pointInRing,
   querySpatialGrid,
   ringBBox,
@@ -132,11 +133,18 @@ function mount(root: HTMLElement, data: MapFile): void {
   if (!baseCtx || !overlayCtx) throw new Error("canvas indisponível");
 
   const cache = document.createElement("canvas");
+  const overview = document.createElement("canvas");
   const cacheCtx = cache.getContext("2d");
-  if (!cacheCtx) throw new Error("canvas indisponível");
+  const overviewCtx = overview.getContext("2d");
+  if (!cacheCtx || !overviewCtx) throw new Error("canvas indisponível");
   let sharp: { scale: number; panX: number; panY: number; dpr: number } | null = null;
+  let overviewScale = 1;
+  let overviewMode: Mode | null = null;
   let settle = 0;
   let fastQueued = false;
+  let dim = 0;
+  let dimTarget = 0;
+  let dimFrame = 0;
 
   const resize = (): void => {
     const rect = stage.getBoundingClientRect();
@@ -147,39 +155,101 @@ function mount(root: HTMLElement, data: MapFile): void {
     }
     if (!framedByUser) Object.assign(view, countryView());
     stage.style.setProperty("--dock-h", `${stage.querySelector("#dock")?.getBoundingClientRect().height ?? 0}px`);
+    overviewMode = null;
     sharp = null;
     paintSharp();
   };
 
+  const ensureOverview = (): void => {
+    const mode = currentMode();
+    if (overviewMode === mode && overview.width > 0) return;
+    const longSide = 1280;
+    overviewScale = longSide / Math.max(data.width, data.height);
+    overview.width = Math.max(1, Math.ceil(data.width * overviewScale));
+    overview.height = Math.max(1, Math.ceil(data.height * overviewScale));
+    const countryScale = overviewScale;
+    paint(
+      overviewCtx,
+      drawables,
+      statePaths,
+      byUf,
+      mode,
+      overview.width,
+      overview.height,
+      1,
+      { scale: overviewScale, panX: 0, panY: 0 },
+      countryScale,
+    );
+    overviewMode = mode;
+  };
   const paintSharp = (): void => {
     const rect = stage.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    base.width = base.width;
+    ensureOverview();
+    const frame = overscanView(view, rect.width, rect.height, 0.6);
+    const cacheW = Math.max(1, Math.round(frame.width * dpr));
+    const cacheH = Math.max(1, Math.round(frame.height * dpr));
+    if (cache.width !== cacheW || cache.height !== cacheH) {
+      cache.width = cacheW;
+      cache.height = cacheH;
+    }
     const countryScale = fitView(data.width, data.height, rect.width, rect.height, mapInset(stage)).scale;
-    paint(baseCtx, drawables, statePaths, byUf, currentMode(), rect.width, rect.height, dpr, view, countryScale);
-    if (cache.width !== base.width || cache.height !== base.height) {
-      cache.width = base.width;
-      cache.height = base.height;
-    }
-    cacheCtx.setTransform(1, 0, 0, 1, 0, 0);
-    cacheCtx.drawImage(base, 0, 0);
-    sharp = { scale: view.scale, panX: view.panX, panY: view.panY, dpr };
-    paintHighlight(overlayCtx, selected, hovered, rect.width, rect.height, dpr, view);
+    paint(cacheCtx, drawables, statePaths, byUf, currentMode(), frame.width, frame.height, dpr, frame, countryScale);
+    sharp = { scale: frame.scale, panX: frame.panX, panY: frame.panY, dpr };
+    paintComposed();
   };
-  const paintFast = (): void => {
-    if (!sharp || sharp.dpr !== (window.devicePixelRatio || 1)) {
-      paintSharp();
-      return;
-    }
-    const mapped = screenTransform(sharp, view);
+  const paintComposed = (): void => {
+    const rect = stage.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    base.width = base.width;
     baseCtx.setTransform(1, 0, 0, 1, 0, 0);
     baseCtx.fillStyle = "#0c0e13";
     baseCtx.fillRect(0, 0, base.width, base.height);
-    baseCtx.imageSmoothingEnabled = mapped.scale !== 1;
-    baseCtx.setTransform(mapped.scale, 0, 0, mapped.scale, mapped.x * sharp.dpr, mapped.y * sharp.dpr);
-    baseCtx.drawImage(cache, 0, 0);
-    overlayCtx.setTransform(1, 0, 0, 1, 0, 0);
-    overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+    if (overview.width > 0) {
+      const cover = view.scale / overviewScale;
+      baseCtx.imageSmoothingEnabled = true;
+      baseCtx.setTransform(cover * dpr, 0, 0, cover * dpr, view.panX * dpr, view.panY * dpr);
+      baseCtx.drawImage(overview, 0, 0);
+    }
+    if (sharp && sharp.dpr === dpr && cache.width > 0) {
+      const mapped = screenTransform(sharp, view);
+      baseCtx.imageSmoothingEnabled = mapped.scale !== 1;
+      baseCtx.setTransform(mapped.scale, 0, 0, mapped.scale, mapped.x * dpr, mapped.y * dpr);
+      baseCtx.drawImage(cache, 0, 0);
+    }
+    drawOverlay();
+  };
+  const paintFast = (): void => {
+    if (!sharp || sharp.dpr !== (window.devicePixelRatio || 1) || overviewMode !== currentMode()) {
+      paintSharp();
+      return;
+    }
+    paintComposed();
+  };
+  const drawOverlay = (): void => {
+    const rect = stage.getBoundingClientRect();
+    paintHighlight(
+      overlayCtx,
+      selected,
+      hovered,
+      rect.width,
+      rect.height,
+      window.devicePixelRatio || 1,
+      view,
+      dim,
+      selected ? selected.fills[currentMode()] ?? null : null,
+    );
+  };
+  const animateDim = (): void => {
+    window.cancelAnimationFrame(dimFrame);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const step = (): void => {
+      dim += (dimTarget - dim) * (reduced ? 1 : 0.22);
+      if (Math.abs(dimTarget - dim) < 0.015) dim = dimTarget;
+      drawOverlay();
+      if (dim !== dimTarget) dimFrame = window.requestAnimationFrame(step);
+    };
+    dimFrame = window.requestAnimationFrame(step);
   };
   const requestFast = (): void => {
     if (fastQueued) return;
@@ -210,16 +280,23 @@ function mount(root: HTMLElement, data: MapFile): void {
   };
 
   const locate = (x: number, y: number): Drawable | null => hit(grid, x, y);
+  const pulseMap = (): void => {
+    base.classList.remove("is-settling");
+    void base.offsetWidth;
+    base.classList.add("is-settling");
+  };
+  const syncSelection = (): void => {
+    dimTarget = selected ? 0.62 : 0;
+    animateDim();
+  };
   const pick = (item: Drawable | null, focus: boolean): void => {
     selected = item;
+    syncSelection();
     if (item && focus) {
       framedByUser = true;
       focusOn(item.box, stage, view);
       requestFast();
       settleSharp();
-    } else {
-      const rect = stage.getBoundingClientRect();
-      paintHighlight(overlayCtx, selected, hovered, rect.width, rect.height, window.devicePixelRatio || 1, view);
     }
     renderPanels();
   };
@@ -252,7 +329,7 @@ function mount(root: HTMLElement, data: MapFile): void {
     const next = locate(world.x, world.y);
     if (next !== hovered) {
       hovered = next;
-      paintHighlight(overlayCtx, selected, hovered, rect.width, rect.height, window.devicePixelRatio || 1, view);
+      drawOverlay();
     }
     moveTooltip(event.clientX, event.clientY, next);
   });
@@ -269,8 +346,7 @@ function mount(root: HTMLElement, data: MapFile): void {
   overlay.addEventListener("pointerleave", () => {
     hovered = null;
     required("#tooltip").hidden = true;
-    const rect = stage.getBoundingClientRect();
-    paintHighlight(overlayCtx, selected, null, rect.width, rect.height, window.devicePixelRatio || 1, view);
+    drawOverlay();
   });
   overlay.addEventListener("dblclick", (event) => {
     const rect = overlay.getBoundingClientRect();
@@ -310,6 +386,7 @@ function mount(root: HTMLElement, data: MapFile): void {
       if (next === "municipios" || next === "estados" || next === "vantagem") voteMode = next;
       indicator = null;
       requiredSelect("#indicator-select").value = "";
+      pulseMap();
       renderPanels();
       paintSharp();
       return;
@@ -328,9 +405,8 @@ function mount(root: HTMLElement, data: MapFile): void {
     }
     if (action === "clear") {
       selected = null;
+      syncSelection();
       renderPanels();
-      const rect = stage.getBoundingClientRect();
-      paintHighlight(overlayCtx, null, hovered, rect.width, rect.height, window.devicePixelRatio || 1, view);
       return;
     }
     if (action === "pick") {
@@ -358,15 +434,15 @@ function mount(root: HTMLElement, data: MapFile): void {
   requiredSelect("#indicator-select").addEventListener("change", (event) => {
     const value = event.target instanceof HTMLSelectElement ? event.target.value : "";
     indicator = INDICATORS.find((item) => item.id === value)?.id ?? null;
+    pulseMap();
     renderPanels();
     paintSharp();
   });
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       selected = null;
+      syncSelection();
       renderPanels();
-      const rect = stage.getBoundingClientRect();
-      paintHighlight(overlayCtx, null, hovered, rect.width, rect.height, window.devicePixelRatio || 1, view);
     }
   });
   new ResizeObserver(resize).observe(stage);
@@ -463,14 +539,27 @@ function paintHighlight(
   height: number,
   dpr: number,
   view: { scale: number; panX: number; panY: number },
+  dim: number,
+  fill: string | null,
 ): void {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, width * dpr, height * dpr);
+  ctx.globalCompositeOperation = "source-over";
+  if (selected && dim > 0.01 && fill) {
+    ctx.fillStyle = `rgba(5, 7, 10, ${dim.toFixed(3)})`;
+    ctx.fillRect(0, 0, width * dpr, height * dpr);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.setTransform(dpr * view.scale, 0, 0, dpr * view.scale, dpr * view.panX, dpr * view.panY);
+    ctx.fill(selected.path, "evenodd");
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = fill;
+    ctx.fill(selected.path, "evenodd");
+  }
   ctx.setTransform(dpr * view.scale, 0, 0, dpr * view.scale, dpr * view.panX, dpr * view.panY);
   for (const item of [hovered, selected]) {
     if (!item) continue;
-    ctx.strokeStyle = "#f8f5ef";
-    ctx.lineWidth = 2.2 / view.scale;
+    ctx.strokeStyle = item === selected ? "#fffaf3" : "#f8f5ef";
+    ctx.lineWidth = (item === selected ? 2.8 : 2.2) / view.scale;
     ctx.stroke(item.path);
   }
 }

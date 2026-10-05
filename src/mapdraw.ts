@@ -122,6 +122,21 @@ export function querySpatialGrid<T>(grid: SpatialGrid<T>, x: number, y: number):
   return grid.buckets.get(`${Math.floor(x / grid.cell)}:${Math.floor(y / grid.cell)}`) ?? [];
 }
 
+export function overscanView(
+  view: { scale: number; panX: number; panY: number },
+  width: number,
+  height: number,
+  margin: number,
+): { scale: number; panX: number; panY: number; width: number; height: number } {
+  return {
+    scale: view.scale,
+    panX: view.panX + width * margin,
+    panY: view.panY + height * margin,
+    width: width * (1 + margin * 2),
+    height: height * (1 + margin * 2),
+  };
+}
+
 export function screenTransform(
   from: { scale: number; panX: number; panY: number },
   to: { scale: number; panX: number; panY: number },

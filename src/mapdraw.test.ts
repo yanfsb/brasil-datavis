@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { advantageColor, buildSpatialGrid, fitView, flatPartyColor, leaderOf, pointInRing, querySpatialGrid, screenTransform, stateOutlineWidth, zoomAt } from "./mapdraw.ts";
+import { advantageColor, buildSpatialGrid, fitView, flatPartyColor, leaderOf, overscanView, pointInRing, querySpatialGrid, screenTransform, stateOutlineWidth, zoomAt } from "./mapdraw.ts";
 
 test("point in a square ring", () => {
   const square = [0, 0, 10, 0, 10, 10, 0, 10];
@@ -20,6 +20,14 @@ test("spatial grid only returns shapes in the queried cell", () => {
   const grid = buildSpatialGrid([near, far], 100);
   assert.deepEqual(querySpatialGrid(grid, 4, 4), [near]);
   assert.deepEqual(querySpatialGrid(grid, 200, 200), []);
+});
+
+test("overscan keeps the viewport center in the middle of the cache", () => {
+  const view = { scale: 2, panX: 30, panY: -10 };
+  const frame = overscanView(view, 200, 100, 0.5);
+  const worldX = (100 - view.panX) / view.scale;
+  const cachedX = frame.panX + worldX * frame.scale;
+  assert.ok(Math.abs(cachedX - frame.width / 2) < 1e-9);
 });
 
 test("screen transform keeps a world point under the same cursor", () => {
