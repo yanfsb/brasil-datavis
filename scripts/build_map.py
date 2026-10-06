@@ -356,6 +356,9 @@ def main() -> None:
         "estados": state_outlines(bounds),
         "ausentes": missing_votes,
     }
+    from mine_extra import apply_cached
+
+    apply_cached(payload["mun"], payload["ufIndicadores"])
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
     print(f"wrote {OUT} mun {len(municipalities)} missing {missing_votes} bytes {OUT.stat().st_size}", flush=True)

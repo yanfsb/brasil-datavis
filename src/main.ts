@@ -40,6 +40,16 @@ interface Mun {
   readonly pib?: number | null;
   readonly densidade?: number | null;
   readonly populacao?: number | null;
+  readonly brancos?: number | null;
+  readonly nulos?: number | null;
+  readonly urbano?: number | null;
+  readonly idosos?: number | null;
+  readonly agro?: number | null;
+  readonly industria?: number | null;
+  readonly lula22?: number | null;
+  readonly pl22?: number | null;
+  readonly oscilacao?: number | null;
+  readonly oscilacaopl?: number | null;
   readonly g: readonly (readonly (readonly number[])[])[];
 }
 
@@ -47,7 +57,7 @@ interface MapFile {
   readonly fonte?: string;
   readonly width: number;
   readonly height: number;
-  readonly brasil: { readonly fp: number; readonly lp: number; readonly fv: number; readonly lv: number; readonly vv: number; readonly ap: number; readonly ab: number };
+  readonly brasil: { readonly fp: number; readonly lp: number; readonly fv: number; readonly lv: number; readonly vv: number; readonly ap: number; readonly ab: number; readonly brancos?: number; readonly nulos?: number };
   readonly ufIndicadores: Readonly<Record<string, Readonly<Record<string, number>>>>;
   readonly mun: readonly Mun[];
   readonly estados?: readonly { readonly ibge: string; readonly g: Mun["g"] }[];
@@ -72,6 +82,14 @@ const INDICATORS = [
   { id: "pib", nome: "PIB per capita", unidade: "R$", ano: "2023" },
   { id: "densidade", nome: "Densidade", unidade: "hab/km²", ano: "Censo 2022" },
   { id: "abstencao", nome: "Abstenção", unidade: "%", ano: "TSE 2026" },
+  { id: "brancos", nome: "Brancos", unidade: "%", ano: "TSE 2026" },
+  { id: "nulos", nome: "Nulos", unidade: "%", ano: "TSE 2026" },
+  { id: "oscilacao", nome: "Lula 2026 − 2022", unidade: "p.p.", ano: "1º turno" },
+  { id: "oscilacaopl", nome: "PL 2026 − 2022", unidade: "p.p.", ano: "Flávio − Bolsonaro" },
+  { id: "urbano", nome: "População urbana", unidade: "%", ano: "Censo 2022" },
+  { id: "idosos", nome: "60 anos ou mais", unidade: "%", ano: "Censo 2022" },
+  { id: "agro", nome: "Agro no PIB", unidade: "%", ano: "IBGE 2021" },
+  { id: "industria", nome: "Indústria no PIB", unidade: "%", ano: "IBGE 2021" },
 ] as const;
 
 type IndicatorId = (typeof INDICATORS)[number]["id"];
@@ -598,7 +616,7 @@ function countryPanel(data: MapFile, counts: { flavio: number; lula: number }): 
       <div class="flavio"><span class="unit">Flávio · PL</span><span class="pct">${formatNumber(data.brasil.fp, 2)}%</span><span class="fine">${data.brasil.fv.toLocaleString("pt-BR")} votos</span></div>
     </div>
     <div class="split" aria-hidden="true"><i class="lula" style="width:${data.brasil.lp}%"></i><i class="flavio" style="width:${data.brasil.fp}%"></i></div>
-    <p class="fine">Diferença de ${formatNumber(data.brasil.fp - data.brasil.lp, 2)} pontos. Outros válidos ${formatNumber(others, 1)}%. Abstenção ${formatNumber(data.brasil.ab, 1)}%.</p>
+    <p class="fine">Diferença de ${formatNumber(data.brasil.fp - data.brasil.lp, 2)} pontos. Outros válidos ${formatNumber(others, 1)}%. Abstenção ${formatNumber(data.brasil.ab, 1)}%${data.brasil.brancos === undefined ? "" : ` · brancos ${formatNumber(data.brasil.brancos, 1)}% · nulos ${formatNumber(data.brasil.nulos ?? 0, 1)}%`}.</p>
     <p class="fine">PL em ${counts.flavio.toLocaleString("pt-BR")} municípios · PT em ${counts.lula.toLocaleString("pt-BR")}. Arraste o mapa, use a roda para aproximar e clique um município.</p>`;
 }
 
@@ -614,6 +632,7 @@ function placePanel(mun: Mun, data: MapFile): string {
       <div class="flavio"><span class="unit">Flávio</span><span class="pct">${formatNumber(mun.fp, 1)}%</span></div>
     </div>
     <p class="fine">${mun.populacao ? `${Math.round(mun.populacao).toLocaleString("pt-BR")} habitantes · ` : ""}${mun.vv.toLocaleString("pt-BR")} votos válidos · ${formatNumber(mun.ap, 0)}% das seções.</p>
+    ${typeof mun.lula22 === "number" ? `<p class="fine">Em 2022, Lula teve ${formatNumber(mun.lula22, 1)}% e Bolsonaro ${formatNumber(mun.pl22 ?? 0, 1)}% dos votos válidos.</p>` : ""}
     <div class="bars">
       ${INDICATORS.map((indicator) => indicatorRow(indicator, indicatorValue(mun, indicator.id), uf?.[indicator.id])).join("")}
     </div>
@@ -877,15 +896,16 @@ function indicatorMode(mode: Mode): boolean {
 
 function indicatorRow(indicator: (typeof INDICATORS)[number], value: number | null, uf: number | undefined): string {
   if (value === null) return "";
-  const scale = Math.max(value, uf ?? value, 1);
+  const magnitude = Math.max(Math.abs(value), Math.abs(uf ?? value), 1);
   const comparison = uf === undefined ? "" : ` · UF ${formatIndicator(indicator.id, uf)}`;
-  return `<div><span>${indicator.nome}</span><span class="track"><i style="width:${(value / scale) * 100}%"></i></span><span>${formatIndicator(indicator.id, value)}${comparison}</span></div>`;
+  return `<div><span>${indicator.nome}</span><span class="track"><i style="width:${(Math.abs(value) / magnitude) * 100}%"></i></span><span>${formatIndicator(indicator.id, value)}${comparison}</span></div>`;
 }
 
 function formatIndicator(id: string, value: number): string {
   const unit = INDICATORS.find((item) => item.id === id)?.unidade;
   if (unit === "R$") return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
   if (unit === "hab/km²") return `${formatNumber(value, value >= 100 ? 0 : 1)} hab/km²`;
+  if (unit === "p.p.") return `${value > 0 ? "+" : ""}${formatNumber(value, 1)} p.p.`;
   return `${formatNumber(value, 1)}%`;
 }
 
