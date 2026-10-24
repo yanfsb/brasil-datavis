@@ -17,3 +17,12 @@ python3 scripts/build_map.py
 ```
 
 O script baixa a malha municipal do IBGE, os arquivos EA20 do TSE e os indicadores do SIDRA. A consulta ao TSE é retomável pelo cache em `data/cache/`.
+
+## Camada de seção (planejada)
+
+O mapa municipal continua sendo a visão padrão. Locais de votação e bairros entram como um drill-down, um arquivo por UF, descrito em `docs/adr/0003-section-neighborhood-layer.md`. O controle "Locais" fica desativado até esses arquivos existirem.
+
+```bash
+npm test
+python3 scripts/build_sections.py --uf BA --dry-run
+```
