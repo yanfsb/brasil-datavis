@@ -1,0 +1,497 @@
+- generic [ref=f3e1]:
+  - generic:
+    - link "Feito pela Pandora, IA que audita os dados de governos e grandes empresas. Acesso sob convite →" [ref=f3e3] [cursor=pointer]:
+      - /url: https://pandorag.com
+    - generic [ref=f3e5]:
+      - banner [ref=f3e6]:
+        - generic [ref=f3e7]:
+          - generic [ref=f3e8]: Apuração 2026
+          - generic [ref=f3e9]:
+            - link "by Pandora (abre pandorag.com)" [ref=f3e10] [cursor=pointer]:
+              - /url: https://pandorag.com
+              - generic [ref=f3e11]: by
+            - navigation "Bruno César nas redes" [ref=f3e26]:
+              - link "@brunoclz no X" [ref=f3e27] [cursor=pointer]:
+                - /url: https://x.com/brunoclz
+              - link "@brunoclz no Instagram" [ref=f3e30] [cursor=pointer]:
+                - /url: https://www.instagram.com/brunoclz/
+        - group "Cargo" [ref=f3e35]:
+          - button "Presidente" [pressed] [ref=f3e36] [cursor=pointer]
+          - button "Governadores" [ref=f3e37] [cursor=pointer]
+          - button "Senado" [ref=f3e38] [cursor=pointer]
+          - button "Deputados, em apuração" [ref=f3e260] [cursor=pointer]: Deputados
+        - button "Buscar município, estado ou candidato" [ref=f3e40] [cursor=pointer]:
+          - generic [ref=f3e44]: Buscar
+        - generic [ref=f3e45]:
+          - generic "Atualizado às 03h00 (horário de Brasília)" [ref=f3e262]:
+            - generic [ref=f3e48]:
+              - text: Atualizado às
+              - generic [ref=f3e264]:
+                - generic [ref=f3e265]: 03h00
+                - generic [ref=f3e266]: "0"
+                - generic [ref=f3e268]: "3"
+                - generic [ref=f3e270]: h
+                - generic [ref=f3e272]: "0"
+                - generic [ref=f3e274]: "0"
+              - text: ·
+              - generic [ref=f3e277]:
+                - generic [ref=f3e278]: 100%
+                - text: 100%
+          - button "Ver os votos do exterior" [ref=f3e49] [cursor=pointer]:
+            - generic [ref=f3e54]: Exterior
+          - button "Compartilhar esta vista" [ref=f3e55] [cursor=pointer]
+          - button "Tela cheia" [ref=f3e58] [cursor=pointer]
+      - generic:
+        - group "O mapa mostra":
+          - button "Municípios" [pressed]
+          - button "Estados"
+          - button "Vantagem"
+          - button "Apurado"
+          - button "Candidato"
+        - generic:
+          - generic:
+            - text: PL
+            - generic: "2.905"
+          - generic:
+            - text: PT
+            - generic: "2.665"
+            - text: municípios
+          - generic "Vantagem do líder, em pontos":
+            - emphasis: até 10 · 25 · 45 · mais pontos
+      - complementary [ref=f3e70]:
+        - generic [ref=f3e71]:
+          - generic [ref=f3e72]:
+            - generic [ref=f3e73]: Presidente · Brasil
+            - generic [ref=f3e279]: 2º turno · definido às 20h55
+          - heading "Flávio Bolsonaro e Lula vão ao 2º turno" [level=2] [ref=f3e281]
+          - generic [ref=f3e76]:
+            - button "Ver Lula" [ref=f3e77] [cursor=pointer]:
+              - generic [ref=f3e284]:
+                - generic [ref=f3e285]: Lula
+                - generic [ref=f3e286]: PT 13
+              - generic [ref=f3e287]:
+                - generic [ref=f3e288]:
+                  - generic [ref=f3e289]: 45,16
+                  - text: 45,16
+                - superscript [ref=f3e290]: "%"
+              - generic [ref=f3e291]:
+                - generic [ref=f3e292]:
+                  - generic [ref=f3e293]: 53.879.538
+                  - text: 53.879.538
+                - text: votos
+            - button "Ver Flávio Bolsonaro" [ref=f3e89] [cursor=pointer]:
+              - generic [ref=f3e296]:
+                - generic [ref=f3e297]: Flávio Bolsonaro
+                - generic [ref=f3e298]: PL 22
+              - generic [ref=f3e299]:
+                - generic [ref=f3e300]:
+                  - generic [ref=f3e301]: 47,03
+                  - text: 47,03
+                - superscript [ref=f3e302]: "%"
+              - generic [ref=f3e303]:
+                - generic [ref=f3e304]:
+                  - generic [ref=f3e305]: 56.104.503
+                  - text: 56.104.503
+                - text: votos
+          - generic [ref=f3e113]:
+            - img "Lula 45,2%, Flávio Bolsonaro 47,0%; a linha do meio marca 50% dos votos válidos" [ref=f3e307]
+            - generic [ref=f3e117]:
+              - generic [ref=f3e311]:
+                - generic [ref=f3e312]: Diferença
+                - generic [ref=f3e314]:
+                  - generic [ref=f3e315]: 1,87 pontos · 2,2 milhões de votos
+                  - text: 1,87 pontos · 2,2 milhões de votos
+              - generic [ref=f3e316]:
+                - generic [ref=f3e317]: 2º turno
+                - generic [ref=f3e318]: Em 25 de outubro
+          - generic [ref=f3e319]:
+            - generic [ref=f3e320]: Ainda em apuração
+            - button "Deputados 390 de 513 eleitos" [ref=f3e321] [cursor=pointer]:
+              - generic [ref=f3e323]: Deputados
+              - generic [ref=f3e324]: 390 de 513 eleitos
+              - generic [ref=f3e325]: →
+        - generic [ref=f3e120]:
+          - generic [ref=f3e121]:
+            - heading "Ao longo da apuração" [level=3] [ref=f3e122]
+            - generic [ref=f3e326]:
+              - generic [ref=f3e327]: Lula
+              - generic [ref=f3e329]: Flávio Bolsonaro
+          - img "Os dois primeiros ao longo da apuração" [ref=f3e331]:
+            - generic [ref=f3e332]: 38%
+            - generic [ref=f3e334]: 40%
+            - generic [ref=f3e336]: 42%
+            - generic [ref=f3e338]: 44%
+            - generic [ref=f3e340]: 46%
+            - generic [ref=f3e342]: 48%
+            - generic [ref=f3e344]: 50%
+            - generic [ref=f3e346]: 52%
+            - generic [ref=f3e348]: 54%
+            - generic [ref=f3e350]: 0% das seções
+            - generic [ref=f3e351]: 50%
+            - generic [ref=f3e352]: 100%
+      - complementary [ref=f3e125]:
+        - generic [ref=f3e126]:
+          - generic [ref=f3e127]:
+            - heading "Por região" [level=3] [ref=f3e128]
+            - generic [ref=f3e129]: Quem lidera para presidente
+          - generic [ref=f3e130]:
+            - generic [ref=f3e131]:
+              - generic [ref=f3e132]: Norte
+              - generic [ref=f3e133]: 100%
+            - generic [ref=f3e361]:
+              - generic [ref=f3e363]: PL
+              - generic [ref=f3e365]:
+                - generic [ref=f3e366]: 49,2%
+                - text: 49,2%
+              - generic "Em relação a 2022 (Jair Bolsonaro, então no PL), em pontos" [ref=f3e367]: +3,7
+          - generic [ref=f3e137]:
+            - generic [ref=f3e138]:
+              - generic [ref=f3e139]: Nordeste
+              - generic [ref=f3e140]: 100%
+            - generic [ref=f3e370]:
+              - generic [ref=f3e372]: PT
+              - generic [ref=f3e374]:
+                - generic [ref=f3e375]: 63,8%
+                - text: 63,8%
+              - generic "Em relação a 2022 (Lula), em pontos" [ref=f3e376]: −3,0
+          - generic [ref=f3e144]:
+            - generic [ref=f3e145]:
+              - generic [ref=f3e146]: Centro-Oeste
+              - generic [ref=f3e147]: 100%
+            - generic [ref=f3e379]:
+              - generic [ref=f3e381]: PL
+              - generic [ref=f3e383]:
+                - generic [ref=f3e384]: 56,5%
+                - text: 56,5%
+              - generic "Em relação a 2022 (Jair Bolsonaro, então no PL), em pontos" [ref=f3e385]: +2,7
+          - generic [ref=f3e151]:
+            - generic [ref=f3e152]:
+              - generic [ref=f3e153]: Sudeste
+              - generic [ref=f3e154]: 100%
+            - generic [ref=f3e388]:
+              - generic [ref=f3e390]: PL
+              - generic [ref=f3e392]:
+                - generic [ref=f3e393]: 51,4%
+                - text: 51,4%
+              - generic "Em relação a 2022 (Jair Bolsonaro, então no PL), em pontos" [ref=f3e394]: +3,8
+          - generic [ref=f3e158]:
+            - generic [ref=f3e159]:
+              - generic [ref=f3e160]: Sul
+              - generic [ref=f3e161]: 100%
+            - generic [ref=f3e397]:
+              - generic [ref=f3e399]: PL
+              - generic [ref=f3e401]:
+                - generic [ref=f3e402]: 60,1%
+                - text: 60,1%
+              - generic "Em relação a 2022 (Jair Bolsonaro, então no PL), em pontos" [ref=f3e403]: +5,5
+          - 'button "Exterior: Lula 47,6%, 100% das seções" [ref=f3e404] [cursor=pointer]':
+            - generic [ref=f3e166]:
+              - generic [ref=f3e167]: Exterior
+              - generic [ref=f3e172]: 100%
+            - generic [ref=f3e407]:
+              - generic [ref=f3e409]: PT
+              - generic [ref=f3e411]:
+                - generic [ref=f3e412]: 47,6%
+                - text: 47,6%
+              - generic "Em relação a 2022 (Lula), em pontos" [ref=f3e413]: +0,4
+        - generic [ref=f3e176]:
+          - heading "Últimas atualizações" [level=3] [ref=f3e178]
+          - generic [ref=f3e179]:
+            - 'button "03h00 Amazonas: Eduardo Braga e Plínio Valério são eleitos para o Senado." [ref=f3e414] [cursor=pointer]':
+              - time [ref=f3e415]: 03h00
+              - paragraph [ref=f3e417]: "Amazonas: Eduardo Braga e Plínio Valério são eleitos para o Senado."
+            - generic [ref=f3e418]:
+              - time [ref=f3e419]: 03h00
+              - img "100% das seções" [ref=f3e420]
+              - paragraph [ref=f3e423]:
+                - generic [ref=f3e424]:
+                  - generic [ref=f3e426]:
+                    - generic [ref=f3e427]: "+1"
+                    - text: seção
+                  - generic [ref=f3e428]:
+                    - generic [ref=f3e429]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e430]: 47,0%
+                    - generic [ref=f3e431]:
+                      - text: Lula
+                      - generic [ref=f3e432]: 45,2%
+            - generic [ref=f3e433]:
+              - time [ref=f3e434]: 01h56
+              - img "100% das seções" [ref=f3e435]
+              - paragraph [ref=f3e438]:
+                - generic [ref=f3e439]:
+                  - generic [ref=f3e441]:
+                    - generic [ref=f3e442]: "+6"
+                    - text: seções
+                  - generic [ref=f3e443]:
+                    - generic [ref=f3e444]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e445]: 47,0%
+                    - generic [ref=f3e446]:
+                      - text: Lula
+                      - generic [ref=f3e447]: 45,2%
+            - 'button "00h47 Minas Gerais: Domingos Sávio e Marília Campos são eleitos para o Senado." [ref=f3e448] [cursor=pointer]':
+              - time [ref=f3e449]: 00h47
+              - paragraph [ref=f3e451]: "Minas Gerais: Domingos Sávio e Marília Campos são eleitos para o Senado."
+            - 'button "00h47 Maranhão: Fufuca e Lahesio Bonfim são eleitos para o Senado." [ref=f3e452] [cursor=pointer]':
+              - time [ref=f3e453]: 00h47
+              - paragraph [ref=f3e455]: "Maranhão: Fufuca e Lahesio Bonfim são eleitos para o Senado."
+            - generic [ref=f3e456]:
+              - time [ref=f3e457]: 00h47
+              - img "100% das seções" [ref=f3e458]
+              - paragraph [ref=f3e461]:
+                - generic [ref=f3e462]:
+                  - generic [ref=f3e464]:
+                    - generic [ref=f3e465]: "+5"
+                    - text: seções
+                  - generic [ref=f3e466]:
+                    - generic [ref=f3e467]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e468]: 47,0%
+                    - generic [ref=f3e469]:
+                      - text: Lula
+                      - generic [ref=f3e470]: 45,2%
+            - generic [ref=f3e471]:
+              - time [ref=f3e472]: 00h41
+              - img "100% das seções" [ref=f3e473]
+              - paragraph [ref=f3e476]:
+                - generic [ref=f3e477]:
+                  - generic [ref=f3e479]:
+                    - generic [ref=f3e480]: "+1"
+                    - text: seção
+                  - generic [ref=f3e481]:
+                    - generic [ref=f3e482]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e483]: 47,0%
+                    - generic [ref=f3e484]:
+                      - text: Lula
+                      - generic [ref=f3e485]: 45,2%
+            - 'button "00h31 Bahia: Rui Costa e Jaques Wagner são eleitos para o Senado." [ref=f3e486] [cursor=pointer]':
+              - time [ref=f3e487]: 00h31
+              - paragraph [ref=f3e489]: "Bahia: Rui Costa e Jaques Wagner são eleitos para o Senado."
+            - generic [ref=f3e490]:
+              - time [ref=f3e491]: 00h30
+              - img "100% das seções" [ref=f3e492]
+              - paragraph [ref=f3e495]:
+                - generic [ref=f3e496]:
+                  - generic [ref=f3e498]:
+                    - generic [ref=f3e499]: "+1"
+                    - text: seção
+                  - generic [ref=f3e500]:
+                    - generic [ref=f3e501]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e502]: 47,0%
+                    - generic [ref=f3e503]:
+                      - text: Lula
+                      - generic [ref=f3e504]: 45,2%
+            - generic [ref=f3e505]:
+              - time [ref=f3e506]: 00h11
+              - img "100% das seções" [ref=f3e507]
+              - paragraph [ref=f3e510]:
+                - generic [ref=f3e511]:
+                  - generic [ref=f3e513]:
+                    - generic [ref=f3e514]: "+1"
+                    - text: seção
+                  - generic [ref=f3e515]:
+                    - generic [ref=f3e516]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e517]: 47,0%
+                    - generic [ref=f3e518]:
+                      - text: Lula
+                      - generic [ref=f3e519]: 45,2%
+            - 'button "23h55 Pará: Helder e Chicão são eleitos para o Senado." [ref=f3e520] [cursor=pointer]':
+              - time [ref=f3e521]: 23h55
+              - paragraph [ref=f3e523]: "Pará: Helder e Chicão são eleitos para o Senado."
+            - generic [ref=f3e524]:
+              - time [ref=f3e525]: 23h55
+              - img "100% das seções" [ref=f3e526]
+              - paragraph [ref=f3e529]:
+                - generic [ref=f3e530]:
+                  - generic [ref=f3e532]:
+                    - generic [ref=f3e533]: "+1"
+                    - text: seção
+                  - generic [ref=f3e534]:
+                    - generic [ref=f3e535]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e536]: 47,0%
+                    - generic [ref=f3e537]:
+                      - text: Lula
+                      - generic [ref=f3e538]: 45,2%
+            - generic [ref=f3e539]:
+              - time [ref=f3e540]: 23h49
+              - img "100% das seções" [ref=f3e541]
+              - paragraph [ref=f3e544]:
+                - generic [ref=f3e545]:
+                  - generic [ref=f3e547]:
+                    - generic [ref=f3e548]: "+2"
+                    - text: seções
+                  - generic [ref=f3e549]:
+                    - generic [ref=f3e550]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e551]: 47,0%
+                    - generic [ref=f3e552]:
+                      - text: Lula
+                      - generic [ref=f3e553]: 45,2%
+            - generic [ref=f3e554]:
+              - time [ref=f3e555]: 23h46
+              - img "100% das seções" [ref=f3e556]
+              - paragraph [ref=f3e559]:
+                - generic [ref=f3e560]:
+                  - generic [ref=f3e562]:
+                    - generic [ref=f3e563]: "+3"
+                    - text: seções
+                  - generic [ref=f3e564]:
+                    - generic [ref=f3e565]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e566]: 47,0%
+                    - generic [ref=f3e567]:
+                      - text: Lula
+                      - generic [ref=f3e568]: 45,2%
+            - generic [ref=f3e569]:
+              - time [ref=f3e570]: 23h44
+              - img "100% das seções" [ref=f3e571]
+              - paragraph [ref=f3e574]:
+                - generic [ref=f3e575]:
+                  - generic [ref=f3e577]:
+                    - generic [ref=f3e578]: "+1"
+                    - text: seção
+                  - generic [ref=f3e579]:
+                    - generic [ref=f3e580]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e581]: 47,0%
+                    - generic [ref=f3e582]:
+                      - text: Lula
+                      - generic [ref=f3e583]: 45,2%
+            - generic [ref=f3e584]:
+              - time [ref=f3e585]: 23h41
+              - img "100% das seções" [ref=f3e586]
+              - paragraph [ref=f3e589]:
+                - generic [ref=f3e590]:
+                  - generic [ref=f3e592]:
+                    - generic [ref=f3e593]: "+2"
+                    - text: seções
+                  - generic [ref=f3e594]:
+                    - generic [ref=f3e595]:
+                      - text: Flávio Bolsonaro
+                      - generic [ref=f3e596]: 47,0%
+                    - generic [ref=f3e597]:
+                      - text: Lula
+                      - generic [ref=f3e598]: 45,2%
+      - generic [ref=f3e183]:
+        - generic [ref=f3e184]: 9:55:24
+        - slider "Hora da apuração" [ref=f3e185] [cursor=pointer]:
+          - button "2º turno definido às 20h55" [ref=f3e600]
+          - generic:
+            - generic: 17h
+            - generic: 19h
+            - generic: 21h
+            - generic: 23h
+            - generic: 1h
+            - generic: 3h
+            - generic: 5h
+            - generic: 7h
+            - generic: 9h
+        - generic "1.695 pessoas com a página aberta agora" [ref=f3e601]:
+          - generic [ref=f3e606]:
+            - generic [ref=f3e607]: "1.695"
+            - text: "1.695"
+          - generic [ref=f3e608]: pessoas agora
+        - generic [ref=f3e191]: Ao vivo
+      - img "Mapa do Brasil com quem lidera em cada lugar" [ref=f3e193]
+      - group "Zoom do mapa" [ref=f3e194]:
+        - button "Aproximar o mapa" [ref=f3e195] [cursor=pointer]
+        - button "Afastar o mapa" [disabled] [ref=f3e198]
+      - generic:
+        - button "Distrito Federal, Flávio Bolsonaro 51,3%" [ref=f3e609] [cursor=pointer]:
+          - generic [ref=f3e201]: DF
+          - generic [ref=f3e610]: 51%
+        - button "Santa Catarina, Flávio Bolsonaro 66,7%" [ref=f3e612] [cursor=pointer]:
+          - generic [ref=f3e203]: SC
+          - generic [ref=f3e613]: 67%
+        - button "Amapá, Lula 45,7%" [ref=f3e615] [cursor=pointer]:
+          - generic [ref=f3e205]: AP
+          - generic [ref=f3e616]: 46%
+        - button "Ceará, Lula 63,3%" [ref=f3e618] [cursor=pointer]:
+          - generic [ref=f3e207]: CE
+          - generic [ref=f3e619]: 63%
+        - button "Acre, Flávio Bolsonaro 64,6%" [ref=f3e621] [cursor=pointer]:
+          - generic [ref=f3e209]: AC
+          - generic [ref=f3e622]: 65%
+        - button "Paraná, Flávio Bolsonaro 59,9%" [ref=f3e624] [cursor=pointer]:
+          - generic [ref=f3e211]: PR
+          - generic [ref=f3e625]: 60%
+        - button "Roraima, Flávio Bolsonaro 71,1%" [ref=f3e627] [cursor=pointer]:
+          - generic [ref=f3e213]: RR
+          - generic [ref=f3e628]: 71%
+        - button "Rondônia, Flávio Bolsonaro 67,5%" [ref=f3e630] [cursor=pointer]:
+          - generic [ref=f3e215]: RO
+          - generic [ref=f3e631]: 67%
+        - button "São Paulo, Flávio Bolsonaro 51,9%" [ref=f3e633] [cursor=pointer]:
+          - generic [ref=f3e217]: SP
+          - generic [ref=f3e634]: 52%
+        - button "Piauí, Lula 71,0%" [ref=f3e636] [cursor=pointer]:
+          - generic [ref=f3e219]: PI
+          - generic [ref=f3e637]: 71%
+        - button "Rio Grande do Sul, Flávio Bolsonaro 55,6%" [ref=f3e639] [cursor=pointer]:
+          - generic [ref=f3e221]: RS
+          - generic [ref=f3e640]: 56%
+        - button "Tocantins, Flávio Bolsonaro 50,4%" [ref=f3e642] [cursor=pointer]:
+          - generic [ref=f3e223]: TO
+          - generic [ref=f3e643]: 50%
+        - button "Maranhão, Lula 64,0%" [ref=f3e645] [cursor=pointer]:
+          - generic [ref=f3e225]: MA
+          - generic [ref=f3e646]: 64%
+        - button "Goiás, Flávio Bolsonaro 53,6%" [ref=f3e648] [cursor=pointer]:
+          - generic [ref=f3e227]: GO
+          - generic [ref=f3e649]: 54%
+        - button "Mato Grosso do Sul, Flávio Bolsonaro 58,6%" [ref=f3e651] [cursor=pointer]:
+          - generic [ref=f3e229]: MS
+          - generic [ref=f3e652]: 59%
+        - button "Bahia, Lula 66,2%" [ref=f3e654] [cursor=pointer]:
+          - generic [ref=f3e231]: BA
+          - generic [ref=f3e655]: 66%
+        - button "Minas Gerais, Flávio Bolsonaro 48,2%" [ref=f3e657] [cursor=pointer]:
+          - generic [ref=f3e233]: MG
+          - generic [ref=f3e658]: 48%
+        - button "Mato Grosso, Flávio Bolsonaro 65,1%" [ref=f3e660] [cursor=pointer]:
+          - generic [ref=f3e235]: MT
+          - generic [ref=f3e661]: 65%
+        - button "Pará, Lula 49,9%" [ref=f3e663] [cursor=pointer]:
+          - generic [ref=f3e237]: PA
+          - generic [ref=f3e664]: 50%
+        - button "Amazonas, Lula 48,2%" [ref=f3e666] [cursor=pointer]:
+          - generic [ref=f3e239]: AM
+          - generic [ref=f3e667]: 48%
+        - button "Rio Grande do Norte, Lula 59,8%" [ref=f3e669] [cursor=pointer]:
+          - generic [ref=f3e241]: RN
+          - generic [ref=f3e670]: 60%
+        - button "Paraíba, Lula 61,3%" [ref=f3e671] [cursor=pointer]:
+          - generic [ref=f3e243]: PB
+          - generic [ref=f3e672]: 61%
+        - button "Pernambuco, Lula 63,5%" [ref=f3e673] [cursor=pointer]:
+          - generic [ref=f3e245]: PE
+          - generic [ref=f3e674]: 63%
+        - button "Alagoas, Lula 54,7%" [ref=f3e675] [cursor=pointer]:
+          - generic [ref=f3e247]: AL
+          - generic [ref=f3e676]: 55%
+        - button "Sergipe, Lula 62,7%" [ref=f3e677] [cursor=pointer]:
+          - generic [ref=f3e249]: SE
+          - generic [ref=f3e678]: 63%
+        - button "Espírito Santo, Flávio Bolsonaro 54,8%" [ref=f3e679] [cursor=pointer]:
+          - generic [ref=f3e251]: ES
+          - generic [ref=f3e680]: 55%
+        - button "Rio de Janeiro, Flávio Bolsonaro 53,0%" [ref=f3e681] [cursor=pointer]:
+          - generic [ref=f3e253]: RJ
+          - generic [ref=f3e682]: 53%
+        - button "Exterior, Lula 47,6%" [ref=f3e683] [cursor=pointer]:
+          - generic [ref=f3e684]: 48%
+      - button "Fechar o aviso" [ref=f3e685] [cursor=pointer]:
+        - paragraph [ref=f3e689]:
+          - text: Flávio Bolsonaro e Lula vão ao 2º turno ·
+          - time [ref=f3e690]: 20h55
+      - paragraph [ref=f3e259]: Flávio Bolsonaro e Lula vão ao 2º turno.
+    - dialog "G4 Valley" [active] [ref=f3e692]:
+      - link [ref=f3e693] [cursor=pointer]:
+        - /url: https://g40.co/g4valley-26
+        - img "G4 Valley, 29, 30 e 31 de outubro, das 8h às 21h, no São Paulo Expo. O maior evento para empresários do Brasil. Onde os Heróis do Brasil se encontram. Saber mais." [ref=f3e694]
+      - button "Fechar" [ref=f3e695] [cursor=pointer]
