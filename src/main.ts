@@ -1,3 +1,4 @@
+import { sectionLayerReady } from "./sections/loadTile.ts";
 import { correlationSentence, formatNumber, pearson } from "./stats.ts";
 import {
   advantageColor,
@@ -401,6 +402,8 @@ function mount(root: HTMLElement, data: MapFile): void {
     const action = target.getAttribute("data-action");
     if (action === "vote") {
       const next = target.getAttribute("data-mode");
+      // Locais is on the control but does not change the municipal map until a UF tile is drawn.
+      if (next === "locais") return;
       if (next === "municipios" || next === "estados" || next === "vantagem") voteMode = next;
       indicator = null;
       requiredSelect("#indicator-select").value = "";
@@ -712,6 +715,9 @@ function shell(): string {
             <button type="button" data-action="vote" data-mode="municipios" aria-pressed="true">Municípios</button>
             <button type="button" data-action="vote" data-mode="vantagem">Vantagem</button>
             <button type="button" data-action="vote" data-mode="estados">Estados</button>
+            <span class="segment-slot" title="em breve">
+              <button type="button" data-action="vote" data-mode="locais"${sectionLayerReady ? "" : " disabled"} title="em breve">Locais</button>
+            </span>
           </div>
           <label class="cross">Cruzar com
             <select id="indicator-select">

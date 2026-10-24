@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "test": "node --experimental-strip-types --test src/stats.test.ts src/mapdraw.test.ts",
+    "test": "node --experimental-strip-types --test src/stats.test.ts src/mapdraw.test.ts src/sections/normalizeBairro.test.ts src/sections/loadTile.test.ts",
     "snapshot": "python3 scripts/build_snapshot.py",
     "preview": "vite preview"
   },

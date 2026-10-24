@@ -1,0 +1,42 @@
+{
+  "uf": "EX",
+  "election": {
+    "year": 2026,
+    "round": 1,
+    "office": "president",
+    "officeCode": "1"
+  },
+  "places": [
+    {
+      "placeId": "1000",
+      "municipalityCode": "00000",
+      "municipalityName": "Exemplo",
+      "zone": "1",
+      "name": "Escola Exemplo",
+      "neighborhoodLabel": "Centro",
+      "neighborhoodKey": "CENTRO",
+      "latitude": -12.97,
+      "longitude": -38.51,
+      "sectionCount": 2,
+      "electorate": 600,
+      "tallies": [
+        { "candidateNumber": "13", "votes": 240 },
+        { "candidateNumber": "22", "votes": 180 }
+      ]
+    }
+  ],
+  "neighborhoods": [
+    {
+      "municipalityCode": "00000",
+      "neighborhoodKey": "CENTRO",
+      "label": "Centro",
+      "placeCount": 1,
+      "sectionCount": 2,
+      "electorate": 600,
+      "tallies": [
+        { "candidateNumber": "13", "votes": 240 },
+        { "candidateNumber": "22", "votes": 180 }
+      ]
+    }
+  ]
+}
