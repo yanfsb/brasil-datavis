@@ -190,7 +190,7 @@ export function correlationSentence(
   const strength = Math.abs(correlation.r);
   const intensity = strength >= 0.7 ? "forte" : strength >= 0.4 ? "moderada" : "fraca";
   const direction = correlation.r >= 0 ? "sobe" : "cai";
-  return `Correlação ${intensity}: a margem de Flávio ${direction} quando ${indicatorName} aumenta. r = ${formatNumber(correlation.r, 2)} em ${correlation.n} ${unit}, sem ponderar pelo eleitorado.`;
+  return `Correlação ${intensity}: a margem do primeiro colocado sobre o segundo ${direction} quando ${indicatorName} aumenta. r = ${formatNumber(correlation.r, 2)} em ${correlation.n} ${unit}, sem ponderar pelo eleitorado.`;
 }
 
 function average(values: readonly number[]): number {

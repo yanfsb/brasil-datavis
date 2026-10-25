@@ -357,8 +357,12 @@ def main() -> None:
         "ausentes": missing_votes,
     }
     from mine_extra import apply_cached
+    from build_national_apuracao import apply_to_map, build as build_national_apuracao
+    from build_national_neighborhoods import apply_to_map as apply_neighborhoods, build as build_national_neighborhoods
 
     apply_cached(payload["mun"], payload["ufIndicadores"])
+    apply_to_map(payload, build_national_apuracao(catalog))
+    apply_neighborhoods(payload, build_national_neighborhoods(catalog, payload))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
     print(f"wrote {OUT} mun {len(municipalities)} missing {missing_votes} bytes {OUT.stat().st_size}", flush=True)

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { advantageColor, buildSpatialGrid, fitView, flatPartyColor, leaderOf, overscanView, pointInRing, querySpatialGrid, screenTransform, stateOutlineWidth, zoomAt } from "./mapdraw.ts";
+import { advantageColor, buildSpatialGrid, candidateAdvantageColor, candidateFlatColor, fitView, flatPartyColor, leaderOf, overscanView, pointInRing, querySpatialGrid, screenTransform, stateOutlineWidth, zoomAt } from "./mapdraw.ts";
 
 test("point in a square ring", () => {
   const square = [0, 0, 10, 0, 10, 10, 0, 10];
@@ -40,6 +40,13 @@ test("screen transform keeps a world point under the same cursor", () => {
   const after = mapped.x + before * mapped.scale;
   assert.ok(Math.abs(after - (to.panX + worldX * to.scale)) < 1e-9);
   assert.ok(Math.abs(mapped.y + (from.panY + worldY * from.scale) * mapped.scale - (to.panY + worldY * to.scale)) < 1e-9);
+});
+
+test("candidate colors distinguish all presidential candidates and encode margin", () => {
+  const colors = ["13", "14", "16", "21", "22", "27", "29", "30", "35", "55", "70", "80"].map(candidateFlatColor);
+  assert.equal(new Set(colors).size, colors.length);
+  assert.notEqual(candidateAdvantageColor("13", 4), candidateAdvantageColor("13", 50));
+  assert.equal(candidateAdvantageColor("empate", 50), candidateFlatColor("empate"));
 });
 
 test("municipality and advantage colors are not the same view", () => {

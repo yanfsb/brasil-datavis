@@ -1,4 +1,4 @@
-export type Leader = "flavio" | "lula" | "empate";
+export type Leader = string;
 
 export interface BBox {
   readonly minX: number;
@@ -51,6 +51,36 @@ export function partyColor(leader: Leader, margin: number, mode: "flat" | "vanta
   const [red, green, blue] = leader === "flavio" ? [47, 116, 242] : [226, 48, 78];
   const mix = (channel: number, base: number): number => Math.round(base + (channel - base) * amount);
   return `rgb(${mix(red, 12)}, ${mix(green, 14)}, ${mix(blue, 19)})`;
+}
+
+const CANDIDATE_COLORS: Readonly<Record<string, readonly [number, number, number]>> = {
+  "13": [226, 59, 85], "14": [14, 165, 233], "16": [245, 158, 11], "21": [20, 184, 166],
+  "22": [47, 116, 245], "27": [132, 204, 22], "29": [236, 72, 153], "30": [6, 182, 212],
+  "35": [249, 115, 22], "55": [168, 85, 247], "70": [34, 197, 94], "80": [250, 204, 21],
+};
+
+export function candidateFlatColor(number: string): string {
+  if (number === "empate") return "#5c6168";
+  const [red, green, blue] = CANDIDATE_COLORS[number] ?? candidateFallbackColor(number);
+  return `rgb(${red}, ${green}, ${blue})`;
+}
+
+export function candidateAdvantageColor(number: string, margin: number): string {
+  if (number === "empate") return "#5c6168";
+  const target = CANDIDATE_COLORS[number] ?? candidateFallbackColor(number);
+  const abs = Math.abs(margin);
+  const amount = abs >= 45 ? 1 : abs >= 25 ? 0.62 + ((abs - 25) / 20) * 0.38 : abs >= 10 ? 0.32 + ((abs - 10) / 15) * 0.3 : 0.08 + (abs / 10) * 0.24;
+  const base = [232, 226, 216];
+  const channel = (index: number): number => Math.round(base[index] + (target[index] - base[index]) * amount);
+  return `rgb(${channel(0)}, ${channel(1)}, ${channel(2)})`;
+}
+
+function candidateFallbackColor(number: string): readonly [number, number, number] {
+  const hue = ((Number(number) || 0) * 137.508) % 360;
+  const chroma = 0.7;
+  const x = chroma * (1 - Math.abs((hue / 60) % 2 - 1));
+  const [r, g, b] = hue < 60 ? [chroma, x, 0] : hue < 120 ? [x, chroma, 0] : hue < 180 ? [0, chroma, x] : hue < 240 ? [0, x, chroma] : hue < 300 ? [x, 0, chroma] : [chroma, 0, x];
+  return [Math.round((r + 0.15) * 255), Math.round((g + 0.15) * 255), Math.round((b + 0.15) * 255)];
 }
 
 export function flatPartyColor(leader: Leader): string {

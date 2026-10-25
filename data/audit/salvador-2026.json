@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-25T03:07:27.448259+00:00",
+  "municipality": {
+    "name": "Salvador",
+    "tseCode": "38490",
+    "ibgeCode": "2927408",
+    "uf": "BA"
+  },
+  "election": {
+    "year": 2026,
+    "round": 1,
+    "electionCode": "6257",
+    "cargoCode": "1"
+  },
+  "sources": {
+    "votes": {
+      "url": "https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_secao/votacao_secao_2026_BR.zip",
+      "member": "votacao_secao_2026_BR.csv",
+      "bytes": 161616519,
+      "sha256": "2d42006d0f6c6e00bad83f5c23cd3d78cd3e3182dbc1ad6718222b6b132c23e1",
+      "lastModified": "Tue, 06 Oct 2026 19:22:49 GMT",
+      "etag": "\"9a21287-65d30ec9f3a44\""
+    },
+    "detail": {
+      "url": "https://cdn.tse.jus.br/estatistica/sead/odsele/detalhe_votacao_secao/detalhe_votacao_secao_2026.zip",
+      "member": "detalhe_votacao_secao_2026_BR.csv",
+      "bytes": 176923175,
+      "sha256": "11a62c3a604e8b73fc328617b7688d2c635de1c76df02ba63b8f77879512f573",
+      "lastModified": "Wed, 07 Oct 2026 20:54:59 GMT",
+      "etag": "\"a8ba227-65d465412458b\""
+    },
+    "electorate": {
+      "url": "https://cdn.tse.jus.br/estatistica/sead/odsele/eleitorado_locais_votacao/eleitorado_local_votacao_2026.zip",
+      "member": "eleitorado_local_votacao_2026_BA.csv",
+      "bytes": 167588698,
+      "sha256": "217ae6a3fa5ee7ae0057228fa0566d92afb5040b7626870ca9455640d5c766e2",
+      "lastModified": "Sat, 24 Oct 2026 18:40:11 GMT",
+      "etag": "\"9fded1c-65e9a6d40e6cc\""
+    },
+    "geometry": {
+      "url": "https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_de_setores_censitarios__divisoes_intramunicipais/censo_2022/bairros/shp/UF/BA_bairros_CD2022.zip",
+      "member": "BA_bairros_CD2022.shp",
+      "bytes": 1179610,
+      "sha256": "683de7c7d1f5395aaa2729d3f239221dc258da5cdd4c16042bc0ba862f5ed28d",
+      "lastModified": "Tue, 12 Nov 2024 20:06:59 GMT",
+      "etag": "\"11ffda-626bcc28a196f\""
+    }
+  },
+  "geometry": {
+    "sourceRecords": 170,
+    "geometryCounts": {
+      "valid": 170
+    },
+    "duplicateCodes": 0,
+    "crs": "EPSG:4674",
+    "projectedCrs": "EPSG:31984",
+    "projectedAreaKm2": 307.11
+  },
+  "results": {
+    "voteRows": 40144,
+    "detailRows": 5124,
+    "voteSections": 5124,
+    "detailSections": 5124,
+    "candidateCodesIncludingSpecial": 15,
+    "voteTotalsByCode": {
+      "13": 944358,
+      "14": 29219,
+      "16": 505,
+      "21": 226,
+      "22": 391188,
+      "27": 462,
+      "28": 50,
+      "29": 239,
+      "30": 2052,
+      "35": 180,
+      "55": 36320,
+      "70": 40676,
+      "80": 1589,
+      "95": 37013,
+      "96": 77516
+    },
+    "sectionTurnout": 1561593,
+    "sectionElectorate": 1955479,
+    "ea20Reconciliation": {
+      "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ba/ba38490-c0001-e006257-u.json",
+      "candidateVotesByNumber": {
+        "13": 944358,
+        "14": 29219,
+        "16": 505,
+        "21": 226,
+        "22": 391188,
+        "27": 462,
+        "29": 239,
+        "30": 2052,
+        "35": 180,
+        "55": 36320,
+        "70": 40676,
+        "80": 1589
+      },
+      "candidates": [
+        {
+          "number": "13",
+          "name": "Lula",
+          "party": "PT"
+        },
+        {
+          "number": "14",
+          "name": "Renan Santos",
+          "party": "MISSÃO"
+        },
+        {
+          "number": "16",
+          "name": "Hertz Dias",
+          "party": "PSTU"
+        },
+        {
+          "number": "21",
+          "name": "Edmilson Costa",
+          "party": "PCB"
+        },
+        {
+          "number": "22",
+          "name": "Flavio Bolsonaro",
+          "party": "PL"
+        },
+        {
+          "number": "27",
+          "name": "Clariana Barao",
+          "party": "DC"
+        },
+        {
+          "number": "29",
+          "name": "Rui Costa Pimenta",
+          "party": "PCO"
+        },
+        {
+          "number": "30",
+          "name": "Zema",
+          "party": "NOVO"
+        },
+        {
+          "number": "35",
+          "name": "Veterinário Wilson Grassi",
+          "party": "DEMOCRATA"
+        },
+        {
+          "number": "55",
+          "name": "Ronaldo Caiado",
+          "party": "PSD"
+        },
+        {
+          "number": "70",
+          "name": "Escritor Augusto Cury",
+          "party": "AVANTE"
+        },
+        {
+          "number": "80",
+          "name": "Samara",
+          "party": "UP"
+        }
+      ],
+      "validVotes": 1447014,
+      "turnout": 1561593,
+      "electorate": 1955479,
+      "blankVotes": 37013,
+      "nullVotes": 77516,
+      "technicalNullVotes": 50,
+      "totalNullRelatedVotes": 77566
+    },
+    "technicalNullCodes": {
+      "28": 50
+    }
+  },
+  "locations": {
+    "electorateRowsUniquePlaces": 462,
+    "votingPlaces": 462,
+    "validCoordinatePlaces": 462,
+    "coordinateConflicts": 0,
+    "invalidCoordinates": {},
+    "assignments": 460,
+    "assignmentIssues": {
+      "outside-or-gap": 1,
+      "outside-salvador-envelope": 1,
+      "voting-place-without-electorate-coordinate-row": 2
+    }
+  },
+  "voteCoverage": {
+    "allVotes": 1561593,
+    "assignedVotes": 1558560,
+    "unassignedVotes": 3033,
+    "allVotesCoveragePercent": 99.805775,
+    "validCandidateVotes": 1447014,
+    "assignedValidCandidateVotes": 1444220,
+    "validVoteCoveragePercent": 99.806913,
+    "unassignedByCode": {
+      "13": 1928,
+      "14": 44,
+      "16": 1,
+      "21": 2,
+      "22": 688,
+      "27": 1,
+      "35": 1,
+      "55": 68,
+      "70": 61,
+      "95": 82,
+      "96": 157
+    }
+  },
+  "publicationGate": "reconciled; spatially unassigned votes retained as explicit categories"
+}

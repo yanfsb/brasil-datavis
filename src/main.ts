@@ -1,14 +1,19 @@
 import { sectionLayerReady } from "./sections/loadTile.ts";
+import { loadSalvadorSummary } from "./sections/loadSalvador.ts";
+import { loadMunicipalityApuracao } from "./sections/loadMunicipality.ts";
+import { loadNeighborhoodSummary } from "./sections/loadNeighborhood.ts";
+import { openMunicipalDetails } from "./sections/municipalDetails.ts";
+import { openLocais } from "./sections/locais.ts";
 import { correlationSentence, formatNumber, pearson } from "./stats.ts";
 import {
-  advantageColor,
+  candidateAdvantageColor,
+  candidateFlatColor,
   buildSpatialGrid,
   contains,
   fitView,
   flatPartyColor,
   indicatorColor,
   intersectsView,
-  leaderOf,
   overscanView,
   pointInRing,
   querySpatialGrid,
@@ -20,6 +25,21 @@ import {
   type Leader,
   type SpatialGrid,
 } from "./mapdraw.ts";
+
+interface Candidate {
+  readonly number: string;
+  readonly name: string;
+  readonly party: string;
+  readonly nationalVotes: number;
+  readonly nationalPercent: number;
+}
+
+interface CandidateResult {
+  readonly number: string;
+  readonly name: string;
+  readonly party: string;
+  readonly votes: number;
+}
 
 interface Mun {
   readonly ibge: string;
@@ -51,6 +71,10 @@ interface Mun {
   readonly pl22?: number | null;
   readonly oscilacao?: number | null;
   readonly oscilacaopl?: number | null;
+  readonly candidatos?: readonly CandidateResult[];
+  readonly apuracaoDetalhe?: string;
+  readonly neighborhoodLayer?: string;
+  readonly votosValidosEA20?: number;
   readonly g: readonly (readonly (readonly number[])[])[];
 }
 
@@ -58,7 +82,10 @@ interface MapFile {
   readonly fonte?: string;
   readonly width: number;
   readonly height: number;
-  readonly brasil: { readonly fp: number; readonly lp: number; readonly fv: number; readonly lv: number; readonly vv: number; readonly ap: number; readonly ab: number; readonly brancos?: number; readonly nulos?: number };
+  readonly brasil: { readonly fp: number; readonly lp: number; readonly fv: number; readonly lv: number; readonly vv: number; readonly ap: number; readonly ab: number; readonly brancos?: number; readonly nulos?: number; readonly candidatos?: readonly Candidate[] };
+  readonly candidatos?: readonly Candidate[];
+  readonly votosForaMunicipios?: Readonly<Record<string, number>>;
+  readonly discrepanciasEA20?: readonly { readonly ibge: string; readonly ea20ValidVotes: number; readonly sectionValidVotes: number; readonly difference: number }[];
   readonly ufIndicadores: Readonly<Record<string, Readonly<Record<string, number>>>>;
   readonly mun: readonly Mun[];
   readonly estados?: readonly { readonly ibge: string; readonly g: Mun["g"] }[];
@@ -70,6 +97,7 @@ interface Drawable {
   readonly box: BBox;
   readonly leader: Leader;
   readonly margem: number;
+  readonly winnerShare: number;
   fills: Record<string, string>;
 }
 
@@ -126,10 +154,9 @@ function mount(root: HTMLElement, data: MapFile): void {
   const ranges = Object.fromEntries(INDICATORS.map((item) => [item.id, extent(drawables, item.id)])) as Record<IndicatorId, [number, number]>;
   assignFills(drawables, byUf, ranges);
   const grid = buildSpatialGrid(drawables, 220);
-  const counts = {
-    flavio: drawables.filter((item) => item.leader === "flavio").length,
-    lula: drawables.filter((item) => item.leader === "lula").length,
-  };
+  const candidates = data.candidatos ?? data.brasil.candidatos ?? [];
+  const counts: Record<string, number> = Object.fromEntries(candidates.map((candidate) => [candidate.number, 0]));
+  for (const item of drawables) if (item.leader !== "empate") counts[item.leader] = (counts[item.leader] ?? 0) + 1;
   let voteMode: "municipios" | "estados" | "vantagem" = "municipios";
   let indicator: IndicatorId | null = null;
   const currentMode = (): Mode => indicator ?? voteMode;
@@ -286,8 +313,8 @@ function mount(root: HTMLElement, data: MapFile): void {
   const renderPanels = (): void => {
     required("#left-panel").innerHTML = selected ? placePanel(selected.mun, data) : countryPanel(data, counts);
     const mode = currentMode();
-    required("#right-panel").innerHTML = indicatorMode(mode) ? correlationPanel(data, drawables, mode, selected) : regionPanel(byUf);
-    required("#legend").innerHTML = legend(mode, counts, ranges);
+    required("#right-panel").innerHTML = indicatorMode(mode) ? correlationPanel(data, drawables, mode, selected) : regionPanel(byUf, candidates);
+    required("#legend").innerHTML = legend(mode, counts, ranges, candidates);
     required("#status").textContent = `${formatNumber(data.brasil.ap, 0)}% das seções · ${drawables.length.toLocaleString("pt-BR")} municípios`;
     const results = required("#search-results");
     const matches = search(drawables, query);
@@ -400,10 +427,60 @@ function mount(root: HTMLElement, data: MapFile): void {
     const target = event.target instanceof Element ? event.target.closest("[data-action]") : null;
     if (!target) return;
     const action = target.getAttribute("data-action");
+    if (action === "details") {
+      const municipality = selected?.mun;
+      if (!municipality) return;
+      const trigger = target instanceof HTMLButtonElement ? target : null;
+      if (trigger) { trigger.disabled = true; trigger.textContent = "Carregando detalhes…"; }
+      const restoreTrigger = (): void => {
+        if (trigger?.isConnected) { trigger.disabled = false; trigger.textContent = "Exibir detalhes da apuração"; }
+      };
+      const showError = (error: unknown): void => {
+        const notice = document.createElement("section");
+        notice.className = "details-notice";
+        notice.setAttribute("role", "alertdialog");
+        notice.innerHTML = `<p>${escapeHtml(error instanceof Error ? error.message : "Falha ao carregar detalhes da apuração")}</p><button type="button" data-dismiss>Fechar</button>`;
+        notice.addEventListener("click", (noticeEvent) => {
+          if (noticeEvent.target instanceof Element && noticeEvent.target.closest("[data-dismiss]")) notice.remove();
+        });
+        root.append(notice);
+      };
+      if (municipality.ibge === "2927408") {
+        void loadSalvadorSummary().then((summary) => {
+          if (selected?.mun.ibge !== municipality.ibge) { restoreTrigger(); return; }
+          restoreTrigger();
+          openLocais(root, summary, () => { renderPanels(); });
+        }).catch((error: unknown) => { restoreTrigger(); if (selected?.mun.ibge === municipality.ibge) showError(error); });
+      } else if (municipality.neighborhoodLayer && municipality.apuracaoDetalhe && data.candidatos) {
+        const candidateNumbers = data.candidatos.map((candidate) => candidate.number);
+        void loadNeighborhoodSummary(municipality.ibge, municipality.neighborhoodLayer, candidateNumbers)
+          .then((summary) => {
+            if (selected?.mun.ibge !== municipality.ibge) { restoreTrigger(); return; }
+            restoreTrigger();
+            openLocais(root, summary, () => { renderPanels(); }, async (place) => {
+              const city = await loadMunicipalityApuracao(municipality.ibge, municipality.apuracaoDetalhe!, candidateNumbers);
+              const zone = city.zones.find((item) => item.number === place.zone);
+              const selectedPlace = zone?.places.find((item) => item.code === place.placeCode);
+              if (!selectedPlace) throw new Error("Local não encontrado nos dados detalhados deste município.");
+              return { schemaVersion: 1, place: { municipalityCode: summary.municipality.tseCode, zone: place.zone, placeCode: place.placeCode },
+                sections: selectedPlace.sections.map((section) => ({ section: section.number, votesByCode: { ...section.candidateVotes, ...section.specialVotes } })) };
+            });
+          }).catch((error: unknown) => { restoreTrigger(); if (selected?.mun.ibge === municipality.ibge) showError(error); });
+      } else if (municipality.apuracaoDetalhe && data.candidatos) {
+        void loadMunicipalityApuracao(municipality.ibge, municipality.apuracaoDetalhe, data.candidatos.map((candidate) => candidate.number))
+          .then((summary) => {
+            if (selected?.mun.ibge !== municipality.ibge) { restoreTrigger(); return; }
+            openMunicipalDetails(root, { name: municipality.nome, uf: municipality.uf }, summary, data.candidatos ?? [], () => { renderPanels(); });
+          })
+          .catch((error: unknown) => { restoreTrigger(); if (selected?.mun.ibge === municipality.ibge) showError(error); });
+      } else {
+        restoreTrigger();
+        showError(new Error("Detalhes oficiais não encontrados para este município."));
+      }
+      return;
+    }
     if (action === "vote") {
       const next = target.getAttribute("data-mode");
-      // Locais is on the control but does not change the municipal map until a UF tile is drawn.
-      if (next === "locais") return;
       if (next === "municipios" || next === "estados" || next === "vantagem") voteMode = next;
       indicator = null;
       requiredSelect("#indicator-select").value = "";
@@ -461,6 +538,7 @@ function mount(root: HTMLElement, data: MapFile): void {
   });
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
+      if (root.querySelector(".locais-dialog, .municipal-details-dialog")) return;
       selected = null;
       syncSelection();
       renderPanels();
@@ -541,7 +619,7 @@ function drawStateLabels(
     ctx.font = "600 13px sans-serif";
     ctx.fillText(uf.sigla, x, y - 7);
     ctx.font = "12px sans-serif";
-    ctx.fillText(`${formatNumber(uf.leader === "lula" ? uf.lp : uf.fp, 0)}%`, x, y + 8);
+    ctx.fillText(`${formatNumber(uf.winnerShare, 0)}%`, x, y + 8);
   }
 }
 
@@ -593,9 +671,9 @@ function assignFills(
   for (const item of drawables) {
     const uf = byUf.get(item.mun.uf);
     const fills: Record<string, string> = {
-      municipios: flatPartyColor(item.leader),
-      vantagem: advantageColor(item.leader, item.margem),
-      estados: uf ? flatPartyColor(uf.leader) : "#3a3f46",
+      municipios: candidateFlatColor(item.leader),
+      vantagem: candidateAdvantageColor(item.leader, item.margem),
+      estados: uf ? candidateFlatColor(uf.leader) : "#3a3f46",
     };
     for (const indicator of INDICATORS) {
       fills[indicator.id] = paintIndicator(indicatorValue(item.mun, indicator.id), ranges[indicator.id]);
@@ -609,37 +687,50 @@ function paintIndicator(value: number | null, range: [number, number]): string {
   return indicatorColor(value, range[0], range[1]);
 }
 
-function countryPanel(data: MapFile, counts: { flavio: number; lula: number }): string {
-  const others = Math.max(0, 100 - data.brasil.fp - data.brasil.lp);
+function countryPanel(data: MapFile, counts: Readonly<Record<string, number>>): string {
+  const candidates = data.brasil.candidatos ?? [];
+  const outsideVotes = Object.values(data.votosForaMunicipios ?? {}).reduce((sum, votes) => sum + votes, 0);
+  const discrepancies = data.discrepanciasEA20?.length ?? 0;
+  const ranked = [...candidates].sort((a, b) => b.nationalVotes - a.nationalVotes);
+  const leaders = ranked.map((candidate) => `<span class="candidate-win"><i style="background:${candidateFlatColor(candidate.number)}"></i>${escapeHtml(candidate.name)} lidera em ${(counts[candidate.number] ?? 0).toLocaleString("pt-BR")} municípios</span>`).join("");
   return `
-    <p class="kicker">Presidente · Brasil</p>
-    <h1>Flávio e Lula vão ao 2º turno</h1>
-    <div class="pair">
-      <div class="lula"><span class="unit">Lula · PT</span><span class="pct">${formatNumber(data.brasil.lp, 2)}%</span><span class="fine">${data.brasil.lv.toLocaleString("pt-BR")} votos</span></div>
-      <div class="flavio"><span class="unit">Flávio · PL</span><span class="pct">${formatNumber(data.brasil.fp, 2)}%</span><span class="fine">${data.brasil.fv.toLocaleString("pt-BR")} votos</span></div>
-    </div>
-    <div class="split" aria-hidden="true"><i class="lula" style="width:${data.brasil.lp}%"></i><i class="flavio" style="width:${data.brasil.fp}%"></i></div>
-    <p class="fine">Diferença de ${formatNumber(data.brasil.fp - data.brasil.lp, 2)} pontos. Outros válidos ${formatNumber(others, 1)}%. Abstenção ${formatNumber(data.brasil.ab, 1)}%${data.brasil.brancos === undefined ? "" : ` · brancos ${formatNumber(data.brasil.brancos, 1)}% · nulos ${formatNumber(data.brasil.nulos ?? 0, 1)}%`}.</p>
-    <p class="fine">PL em ${counts.flavio.toLocaleString("pt-BR")} municípios · PT em ${counts.lula.toLocaleString("pt-BR")}. Arraste o mapa, use a roda para aproximar e clique um município.</p>`;
+    <p class="kicker">Presidência · Brasil</p>
+    <h1>Apuração por candidatura</h1>
+    <p class="fine">Votos válidos · candidaturas ordenadas pela votação nacional</p>
+    <div class="candidate-list">${ranked.map((candidate) => candidateRow(candidate.name, candidate.party, candidate.nationalVotes, candidate.nationalPercent, candidate.number)).join("")}</div>
+    <p class="fine">O total nacional do TSE inclui ${outsideVotes.toLocaleString("pt-BR")} votos válidos sem município brasileiro (inclui exterior); esses votos não são atribuídos ao mapa.</p>
+    ${discrepancies ? `<p class="data-warning fine">Há divergências entre o agregado municipal EA20 e o CSV de votação por seção em ${discrepancies} municípios; o mapa e os detalhes usam a soma por seção. Ao selecionar um deles, a diferença é informada.</p>` : ""}
+    <div class="candidate-wins">${leaders}</div>
+    <p class="fine">Abstenção ${formatNumber(data.brasil.ab, 1)}%${data.brasil.brancos === undefined ? "" : ` · brancos ${formatNumber(data.brasil.brancos, 1)}% · nulos ${formatNumber(data.brasil.nulos ?? 0, 1)}%`}. Arraste o mapa, use a roda para aproximar e selecione um município.</p>`;
 }
 
 function placePanel(mun: Mun, data: MapFile): string {
-  const leader = leaderOf(mun.fv, mun.lv);
+  const candidates = [...(mun.candidatos ?? [])].sort((a, b) => b.votes - a.votes);
+  const total = candidates.reduce((sum, candidate) => sum + candidate.votes, 0);
+  const first = candidates[0];
+  const second = candidates[1];
+  const winner = first && second && first.votes === second.votes ? "empate" : first?.number ?? "empate";
+  const margin = total && first && second ? 100 * (first.votes - second.votes) / total : 0;
   const uf = data.ufIndicadores[mun.uf];
+  const detailHint = mun.ibge === "2927408" ? "Bairros, zonas eleitorais, locais e seções." : "Zonas eleitorais, locais de votação e seções.";
   return `
     <p class="kicker">${escapeHtml(mun.uf)} · ${escapeHtml(REGIAO[mun.uf] ?? "")}</p>
     <div class="section-head"><h1>${escapeHtml(mun.nome)}</h1><button class="text-button" type="button" data-action="clear">fechar</button></div>
-    <p class="fine">${leaderLabel(leader)} lidera por ${formatNumber(Math.abs(mun.fp - mun.lp), 1)} pontos.</p>
-    <div class="pair">
-      <div class="lula"><span class="unit">Lula</span><span class="pct">${formatNumber(mun.lp, 1)}%</span></div>
-      <div class="flavio"><span class="unit">Flávio</span><span class="pct">${formatNumber(mun.fp, 1)}%</span></div>
-    </div>
-    <p class="fine">${mun.populacao ? `${Math.round(mun.populacao).toLocaleString("pt-BR")} habitantes · ` : ""}${mun.vv.toLocaleString("pt-BR")} votos válidos · ${formatNumber(mun.ap, 0)}% das seções.</p>
+    <button class="details-action" type="button" data-action="details" aria-describedby="details-availability">Exibir detalhes da apuração</button>
+    <p class="details-availability fine" id="details-availability">${detailHint}</p>
+    <p class="fine">${escapeHtml(candidateName(winner, data.candidatos ?? []))} ${winner === "empate" ? "empatam" : "lidera"} com ${formatNumber(first ? 100 * first.votes / Math.max(1, total) : 0, 1)}%${second ? ` · margem de ${formatNumber(margin, 1)} p.p.` : ""}.</p>
+    <div class="candidate-list">${candidates.map((candidate) => candidateRow(candidate.name, candidate.party, candidate.votes, total ? 100 * candidate.votes / total : 0, candidate.number)).join("")}</div>
+    <p class="fine">${mun.populacao ? `${Math.round(mun.populacao).toLocaleString("pt-BR")} habitantes · ` : ""}${total.toLocaleString("pt-BR")} votos válidos · ${formatNumber(mun.ap, 0)}% das seções.</p>
+    ${mun.votosValidosEA20 === undefined ? "" : `<p class="data-warning fine">Os arquivos oficiais divergem: EA20 registra ${mun.votosValidosEA20.toLocaleString("pt-BR")} votos válidos; a soma do CSV por seção é ${total.toLocaleString("pt-BR")} (${(total - mun.votosValidosEA20) > 0 ? "+" : ""}${(total - mun.votosValidosEA20).toLocaleString("pt-BR")}). Mapa e detalhes usam a votação por seção.</p>`}
     ${typeof mun.lula22 === "number" ? `<p class="fine">Em 2022, Lula teve ${formatNumber(mun.lula22, 1)}% e Bolsonaro ${formatNumber(mun.pl22 ?? 0, 1)}% dos votos válidos.</p>` : ""}
     <div class="bars">
       ${INDICATORS.map((indicator) => indicatorRow(indicator, indicatorValue(mun, indicator.id), uf?.[indicator.id])).join("")}
     </div>
     <p class="fine">A barra compara o município com o valor da UF, quando ele existe na mesma fonte.</p>`;
+}
+
+function candidateRow(name: string, party: string, votes: number, share: number, number: string): string {
+  return `<article class="candidate-row"><div class="candidate-row-head"><span><i style="background:${candidateFlatColor(number)}"></i><b>${escapeHtml(name)}</b><small>${escapeHtml(party)}</small></span><strong>${votes.toLocaleString("pt-BR")} <small>${formatNumber(share, 1)}%</small></strong></div><div class="candidate-track"><i style="width:${Math.min(100, Math.max(0, share))}%;background:${candidateFlatColor(number)}"></i></div></article>`;
 }
 
 function correlationPanel(data: MapFile, drawables: readonly Drawable[], mode: Mode, selected: Drawable | null): string {
@@ -656,43 +747,43 @@ function correlationPanel(data: MapFile, drawables: readonly Drawable[], mode: M
     <p class="fine">Votos do TSE e malha do IBGE. Correlação territorial não explica o voto individual.</p>`;
 }
 
-function regionPanel(byUf: ReadonlyMap<string, UfAgg>): string {
-  const grouped = new Map<string, { fv: number; lv: number; vv: number }>();
+function regionPanel(byUf: ReadonlyMap<string, UfAgg>, candidates: readonly Candidate[]): string {
+  const grouped = new Map<string, { votes: number; candidateVotes: Map<string, number> }>();
   for (const uf of byUf.values()) {
     const region = REGIAO[uf.sigla] ?? "Outras";
-    const current = grouped.get(region) ?? { fv: 0, lv: 0, vv: 0 };
-    current.fv += uf.fv;
-    current.lv += uf.lv;
-    current.vv += uf.vv;
+    const current = grouped.get(region) ?? { votes: 0, candidateVotes: new Map<string, number>() };
+    current.votes += uf.vv;
+    for (const [number, votes] of uf.candidateVotes.entries()) current.candidateVotes.set(number, (current.candidateVotes.get(number) ?? 0) + votes);
     grouped.set(region, current);
   }
   const order = ["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"];
   return `
     <p class="kicker">Por região</p>
-    <h2>Quem lidera</h2>
+    <h2>Vencedor e votação de cada candidatura</h2>
     <div class="region-list">
       ${order.map((region) => {
         const item = grouped.get(region);
         if (!item) return "";
-        const flavio = item.vv ? (100 * item.fv) / item.vv : 0;
-        const lula = item.vv ? (100 * item.lv) / item.vv : 0;
-        const leader = flavio >= lula ? "PL" : "PT";
-        const share = Math.max(flavio, lula);
-        return `<article><span>${region}</span><b class="${leader === "PL" ? "flavio" : "lula"}">${leader} ${formatNumber(share, 1)}%</b></article>`;
+        const ranked = [...item.candidateVotes].sort((a, b) => b[1] - a[1]);
+        const tied = ranked[0]?.[1] === ranked[1]?.[1];
+        const winner = tied ? null : ranked[0];
+        const share = item.votes ? 100 * (winner?.[1] ?? 0) / item.votes : 0;
+        const name = candidates.find((candidate) => candidate.number === winner?.[0])?.name ?? "Empate";
+        return `<details><summary><span>${region}</span><b><i style="background:${candidateFlatColor(winner?.[0] ?? "empate")}"></i>${escapeHtml(name)} ${formatNumber(share, 1)}%</b></summary><div class="candidate-list">${candidates.map((candidate) => candidateRow(candidate.name, candidate.party, item.candidateVotes.get(candidate.number) ?? 0, item.votes ? 100 * (item.candidateVotes.get(candidate.number) ?? 0) / item.votes : 0, candidate.number)).join("")}</div></details>`;
       }).join("")}
     </div>
-    <p class="fine">Soma dos votos de Flávio e Lula nos municípios do mapa. Não inclui o exterior.</p>`;
+    <p class="fine">Soma das votações nos municípios brasileiros. Votos do exterior estão no total nacional, não na comparação regional.</p>`;
 }
 
-function legend(mode: Mode, counts: { flavio: number; lula: number }, ranges: Record<IndicatorId, [number, number]>): string {
+function legend(mode: Mode, counts: Readonly<Record<string, number>>, ranges: Record<IndicatorId, [number, number]>, candidates: readonly Candidate[]): string {
   if (isIndicator(mode)) {
     const [min, max] = ranges[mode];
     return `<span>${formatIndicator(mode, min)}</span><i class="swatch" style="background:linear-gradient(90deg,#4e8ea8,#e07a46)"></i><span>${formatIndicator(mode, max)}</span>`;
   }
   if (mode === "vantagem") {
-    return `<span>apertada</span><i class="swatch" style="background:linear-gradient(90deg,#e8e2d8,#e23b55)"></i><i class="swatch" style="background:linear-gradient(90deg,#e8e2d8,#2f74f5)"></i><span>45 pontos ou mais</span>`;
+    return `<span>margem estreita</span><i class="swatch" style="background:linear-gradient(90deg,#e8e2d8,#8b8178)"></i><span>margem ampla · cor do vencedor</span>`;
   }
-  return `<span class="lula">PT ${counts.lula.toLocaleString("pt-BR")}</span><span class="flavio">PL ${counts.flavio.toLocaleString("pt-BR")}</span><span>${mode === "estados" ? "uma cor por UF" : "cor chapada do vencedor"}</span>`;
+  return `<span>${mode === "estados" ? "Vencedor em cada UF:" : "Vencedor em cada município:"}</span>${candidates.map((candidate) => `<span class="legend-candidate"><i style="background:${candidateFlatColor(candidate.number)}"></i>${escapeHtml(candidate.name)}${mode === "municipios" ? ` · ${counts[candidate.number] ?? 0}` : ""}</span>`).join("")}`;
 }
 
 function shell(): string {
@@ -715,9 +806,6 @@ function shell(): string {
             <button type="button" data-action="vote" data-mode="municipios" aria-pressed="true">Municípios</button>
             <button type="button" data-action="vote" data-mode="vantagem">Vantagem</button>
             <button type="button" data-action="vote" data-mode="estados">Estados</button>
-            <span class="segment-slot" title="em breve">
-              <button type="button" data-action="vote" data-mode="locais"${sectionLayerReady ? "" : " disabled"} title="em breve">Locais</button>
-            </span>
           </div>
           <label class="cross">Cruzar com
             <select id="indicator-select">
@@ -768,12 +856,14 @@ function toDrawable(mun: Mun): Drawable {
       };
     }
   }
+  const result = resultForMunicipality(mun);
   return {
     mun,
     path,
     box,
-    leader: leaderOf(mun.fv, mun.lv),
-    margem: mun.fp - mun.lp,
+    leader: result.winner,
+    margem: result.margin,
+    winnerShare: result.share,
     fills: {
       municipios: "#2a2e36",
       vantagem: "#2a2e36",
@@ -809,6 +899,8 @@ interface UfAgg {
   lp: number;
   margem: number;
   leader: Leader;
+  winnerShare: number;
+  candidateVotes: Map<string, number>;
   x: number;
   y: number;
   minX: number;
@@ -821,7 +913,7 @@ function aggregate(drawables: readonly Drawable[]): Map<string, UfAgg> {
   const grouped = new Map<string, UfAgg>();
   for (const item of drawables) {
     const current = grouped.get(item.mun.uf) ?? {
-      sigla: item.mun.uf, fv: 0, lv: 0, vv: 0, fp: 0, lp: 0, margem: 0, leader: "empate" as Leader,
+      sigla: item.mun.uf, fv: 0, lv: 0, vv: 0, fp: 0, lp: 0, margem: 0, leader: "empate" as Leader, winnerShare: 0, candidateVotes: new Map<string, number>(),
       x: 0, y: 0, minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity,
     };
     current.minX = Math.min(current.minX, item.box.minX);
@@ -831,6 +923,7 @@ function aggregate(drawables: readonly Drawable[]): Map<string, UfAgg> {
     current.fv += item.mun.fv;
     current.lv += item.mun.lv;
     current.vv += item.mun.vv;
+    for (const candidate of item.mun.candidatos ?? []) current.candidateVotes.set(candidate.number, (current.candidateVotes.get(candidate.number) ?? 0) + candidate.votes);
     current.x += ((item.box.minX + item.box.maxX) / 2) * item.mun.vv;
     current.y += ((item.box.minY + item.box.maxY) / 2) * item.mun.vv;
     grouped.set(item.mun.uf, current);
@@ -838,8 +931,11 @@ function aggregate(drawables: readonly Drawable[]): Map<string, UfAgg> {
   for (const uf of grouped.values()) {
     uf.fp = uf.vv ? (100 * uf.fv) / uf.vv : 0;
     uf.lp = uf.vv ? (100 * uf.lv) / uf.vv : 0;
-    uf.margem = uf.fp - uf.lp;
-    uf.leader = leaderOf(uf.fv, uf.lv);
+    const ranked = [...uf.candidateVotes].sort((a, b) => b[1] - a[1]);
+    const totalVotes = ranked.reduce((sum, [, votes]) => sum + votes, 0);
+    uf.leader = ranked[0] && ranked[0][1] !== ranked[1]?.[1] ? ranked[0][0] : "empate";
+    uf.margem = totalVotes && ranked[0] && ranked[1] ? 100 * (ranked[0][1] - ranked[1][1]) / totalVotes : 0;
+    uf.winnerShare = totalVotes ? 100 * (ranked[0]?.[1] ?? 0) / totalVotes : 0;
     uf.x = uf.vv ? uf.x / uf.vv : uf.x;
     uf.y = uf.vv ? uf.y / uf.vv : uf.y;
   }
@@ -868,7 +964,7 @@ function moveTooltip(x: number, y: number, item: Drawable | null): void {
     return;
   }
   tooltip.hidden = false;
-  tooltip.innerHTML = `<b>${escapeHtml(item.mun.nome)}</b>${item.mun.uf} · ${leaderLabel(item.leader)} ${formatNumber(Math.max(item.mun.fp, item.mun.lp), 1)}%`;
+  tooltip.innerHTML = `<b>${escapeHtml(item.mun.nome)}</b>${item.mun.uf} · ${escapeHtml(candidateName(item.leader, item.mun.candidatos ?? []))} ${formatNumber(item.winnerShare, 1)}%`;
   const pad = 8;
   const width = tooltip.offsetWidth;
   const height = tooltip.offsetHeight;
@@ -915,10 +1011,23 @@ function formatIndicator(id: string, value: number): string {
   return `${formatNumber(value, 1)}%`;
 }
 
-function leaderLabel(leader: Leader): string {
-  if (leader === "flavio") return "Flávio";
-  if (leader === "lula") return "Lula";
-  return "Empate";
+function candidateName(number: string, candidates: readonly { readonly number: string; readonly name: string }[]): string {
+  return number === "empate" ? "Empate" : candidates.find((candidate) => candidate.number === number)?.name ?? `Candidatura ${number}`;
+}
+
+function resultForMunicipality(mun: Mun): { winner: string; margin: number; share: number } {
+  const votes = mun.candidatos?.length ? mun.candidatos : [
+    { number: "22", name: "Flávio", party: "PL", votes: mun.fv },
+    { number: "13", name: "Lula", party: "PT", votes: mun.lv },
+  ];
+  const ranked = [...votes].sort((a, b) => b.votes - a.votes);
+  const total = ranked.reduce((sum, candidate) => sum + candidate.votes, 0);
+  const winner = ranked[0] && ranked[0].votes !== ranked[1]?.votes ? ranked[0].number : "empate";
+  return {
+    winner,
+    margin: total && ranked[0] && ranked[1] ? 100 * (ranked[0].votes - ranked[1].votes) / total : 0,
+    share: total ? 100 * (ranked[0]?.votes ?? 0) / total : 0,
+  };
 }
 
 function normalize(value: string): string {
